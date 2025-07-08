@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
-import { AuthService } from '../../services/auth';
+import { AuthService } from '../../../services/auths/auth'; 
 import { Router } from '@angular/router';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom } from 'rxjs'; 
 
 @Component({
   selector: 'app-register',
@@ -23,16 +23,19 @@ export class Register {
     this.successMessage = null;
 
     try {
-      await firstValueFrom(this.authService.register(this.email, this.password));
+      await firstValueFrom(this.authService.register(this.email, this.password)); 
+      console.log('Usuário registrado com sucesso!');
 
-      this.successMessage = 'Registro realizado com sucesso! Você pode fazer login agora.';
+      await firstValueFrom(this.authService.sendEmailVerification()); 
+      console.log('Email de verificação enviado!');
+
+      this.successMessage = 'Registro realizado com sucesso! Um link de verificação foi enviado para seu email. Por favor, verifique sua caixa de entrada.';
       setTimeout(() => {
         this.router.navigate(['/login']);
-      }, 1500);
+      }, 5000);
 
     } catch (error: any) {
-      console.error('Erro ao registrar:', error); 
-
+      console.error('Erro ao registrar:', error);
       if (error && error.code) {
         switch (error.code) {
           case 'auth/email-already-in-use':
@@ -41,7 +44,7 @@ export class Register {
           case 'auth/weak-password':
             this.errorMessage = 'A senha deve ter pelo menos 6 caracteres.';
             break;
-          case 'auth/invalid-email': 
+          case 'auth/invalid-email':
             this.errorMessage = 'O formato do email é inválido.';
             break;
           default:

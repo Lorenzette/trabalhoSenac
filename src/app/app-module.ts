@@ -16,6 +16,10 @@ import { Login } from './auth/login/login';
 import { Register } from './auth/register/register';
 import { Dashboard } from './dashboard/dashboard';
 import { ForgotPassword } from './auth/forgot-password/forgot-password';
+import { CategoryList } from './categories/category-list/category-list';
+import { CategoryForm } from './categories/category-form/category-form';
+import { TaskList } from './tasks/task-list/task-list';
+import { TaskForm } from './tasks/task-form/task-form';
 
 @NgModule({
   declarations: [
@@ -23,7 +27,11 @@ import { ForgotPassword } from './auth/forgot-password/forgot-password';
     Login,
     Register,
     Dashboard,
-    ForgotPassword
+    ForgotPassword,
+    CategoryList,
+    CategoryForm,
+    TaskList,
+    TaskForm
   ],
   imports: [
     BrowserModule,

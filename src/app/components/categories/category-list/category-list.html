@@ -1,0 +1,27 @@
+<div class="category-list-container">
+  <h2>Minhas Categorias</h2>
+  
+  <p *ngIf="successMessage" class="success-message">{{ successMessage }}</p>
+  <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
+
+  <button class="add-button" (click)="onAddCategory()">Adicionar Nova Categoria</button>
+
+  <div *ngIf="(categories$ | async) as categories">
+    <p *ngIf="categories.length === 0" class="no-categories-message">
+      Nenhuma categoria encontrada. Clique em "Adicionar Nova Categoria" para começar!
+    </p>
+
+    <ul class="category-list" *ngIf="categories.length > 0">
+      <li *ngFor="let category of categories" class="category-item">
+        <div class="category-details">
+          <h3>{{ category.name }}</h3>
+          <p>{{ category.description }}</p>
+        </div>
+        <div class="category-actions">
+          <button class="edit-button" (click)="onEditCategory(category.id)">Editar</button>
+          <button class="delete-button" (click)="onDeleteCategory(category.id)">Excluir</button>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>

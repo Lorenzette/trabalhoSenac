@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
-import { Observable, from } from 'rxjs';
+import { Observable, from, firstValueFrom } from 'rxjs'; // Importe firstValueFrom
 import { map } from 'rxjs/operators';
 import firebase from 'firebase/compat/app';
 
@@ -8,7 +8,6 @@ import firebase from 'firebase/compat/app';
   providedIn: 'root'
 })
 export class AuthService {
-
   user: Observable<firebase.User | null>;
 
   constructor(private afAuth: AngularFireAuth) {
@@ -32,6 +31,7 @@ export class AuthService {
     return from(this.afAuth.signOut());
   }
 
+  // Não usamos toPromise aqui, então não precisa alterar
   getCurrentUserId(): Promise<string | null> {
     return this.afAuth.currentUser.then(user => user ? user.uid : null);
   }

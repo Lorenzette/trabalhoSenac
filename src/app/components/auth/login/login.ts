@@ -1,13 +1,13 @@
 import { Component } from '@angular/core';
-import { AuthService } from '../../services/auth'; 
-import { firstValueFrom } from 'rxjs';
+import { AuthService } from '../../../services/auths/auth';
 import { Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs'; 
 
 @Component({
   selector: 'app-login',
   standalone: false,
-  templateUrl: './login.html', 
-  styleUrls: ['./login.scss'] 
+  templateUrl: './login.html',
+  styleUrls: ['./login.scss']
 })
 export class Login {
   email!: string;
@@ -22,14 +22,13 @@ export class Login {
     this.successMessage = null;
 
     try {
-      await firstValueFrom(this.authService.login(this.email, this.password));
-      this.successMessage = 'Login realizado com sucesso!'; 
+      await firstValueFrom(this.authService.login(this.email, this.password)); 
+      this.successMessage = 'Login realizado com sucesso!';
       setTimeout(() => {
         this.router.navigate(['/dashboard']);
-      }, 1500); 
+      }, 1500);
     } catch (error: any) {
       console.error('Erro ao fazer login:', error);
-
       if (error && error.code) {
         switch (error.code) {
           case 'auth/user-not-found':
@@ -55,19 +54,18 @@ export class Login {
   }
 
   async onGoogleLogin(): Promise<void> {
-    console.log('Tentando login com Google...'); 
+    console.log('Tentando login com Google...');
     this.errorMessage = null;
     this.successMessage = null;
 
     try {
-      await firstValueFrom(this.authService.loginWithGoogle());
-      this.successMessage = 'Login com Google realizado com sucesso!'; 
+      await firstValueFrom(this.authService.loginWithGoogle()); 
+      this.successMessage = 'Login com Google realizado com sucesso!';
       setTimeout(() => {
         this.router.navigate(['/dashboard']);
       }, 1500);
     } catch (error: any) {
       console.error('Erro ao fazer login com Google:', error);
-
       if (error && error.code) {
         switch (error.code) {
           case 'auth/popup-closed-by-user':
