@@ -1,0 +1,27 @@
+<div class="login-container">
+  <h2>Fazer Login</h2>
+  <form (ngSubmit)="onLogin()">
+    <div class="form-group">
+      <label for="email">Email:</label>
+      <input type="email" id="email" [(ngModel)]="email" name="email" required>
+    </div>
+    <div class="form-group">
+      <label for="password">Senha:</label>
+      <input type="password" id="password" [(ngModel)]="password" name="password" required>
+    </div>
+    <button type="submit">Login</button>
+  </form>
+
+  <button class="google-login-button" (click)="onGoogleLogin()">
+    Login com Google
+  </button>
+
+  <p *ngIf="successMessage" class="success-message">{{ successMessage }}</p>
+  <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
+
+  <p class="forgot-password-link">
+    <a routerLink="/forgot-password">Esqueci minha senha</a>
+  </p>
+
+  <p class="register-link">Não tem uma conta? <a routerLink="/register">Registre-se aqui</a></p>
+</div>
