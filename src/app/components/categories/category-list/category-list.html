@@ -4,7 +4,8 @@
   <p *ngIf="successMessage" class="success-message">{{ successMessage }}</p>
   <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
 
-  <button class="add-button" (click)="onAddCategory()">Adicionar Nova Categoria</button>
+  <div class="header-actions"> <button class="add-button" (click)="onAddCategory()">Adicionar Nova Categoria</button>
+    <button class="back-button" routerLink="/dashboard">Voltar ao Dashboard</button> </div>
 
   <div *ngIf="(categories$ | async) as categories">
     <p *ngIf="categories.length === 0" class="no-categories-message">

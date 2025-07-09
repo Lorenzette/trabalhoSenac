@@ -11,24 +11,30 @@ import { Observable, firstValueFrom } from 'rxjs';
   styleUrls: ['./task-form.scss']
 })
 export class TaskForm implements OnInit {
-  task: Task = { title: '', completed: false, categoryId: '', userId: '' };
+  task: Task = {
+    title: '',
+    description: null,
+    dueDate: null,
+    priority: 'medium',
+    completed: false,
+    categoryId: '',
+    userId: ''
+  };
   taskId: string | null = null;
   isEditMode: boolean = false;
-  categories$!: Observable<Category[]>;
-  selectedFile: File | null = null;
-  attachmentPreviewUrl: string | null = null;
+  categories$!: Observable<Category[]>; 
   errorMessage: string | null = null;
   successMessage: string | null = null;
 
   constructor(
     private taskService: TaskService,
-    private categoryService: CategoryService,
+    private categoryService: CategoryService, 
     private route: ActivatedRoute,
     private router: Router
   ) { }
 
   ngOnInit(): void {
-    this.categories$ = this.categoryService.getCategories(); 
+    this.categories$ = this.categoryService.getCategories();
     this.taskId = this.route.snapshot.paramMap.get('id');
     if (this.taskId) {
       this.isEditMode = true;
@@ -42,14 +48,13 @@ export class TaskForm implements OnInit {
       if (taskData) {
         this.task = taskData;
         if (this.task.dueDate) {
-          let dueDate = this.task.dueDate;
-          if (typeof (dueDate as any).toDate === 'function') {
-            dueDate = (dueDate as any).toDate();
-          } else if (!(dueDate instanceof Date)) {
-            dueDate = new Date(dueDate);
+          let date = this.task.dueDate;
+          if (typeof (date as any).toDate === 'function') {
+            date = (date as any).toDate();
+          } else if (!(date instanceof Date)) {
+            date = new Date(date);
           }
-          this.task.dueDate = dueDate;
-          this.attachmentPreviewUrl = this.task.attachmentUrl || null;
+          this.task.dueDate = date;
         }
       } else {
         this.errorMessage = 'Tarefa não encontrada.';
@@ -61,24 +66,6 @@ export class TaskForm implements OnInit {
     }
   }
 
-  onFileSelected(event: any): void {
-    const file: File = event.target.files[0];
-    if (file) {
-      this.selectedFile = file;
-      this.attachmentPreviewUrl = null;
-    }
-  }
-
-  onRemoveAttachment(): void {
-    if (confirm('Tem certeza que deseja remover o anexo?')) {
-      this.task.attachmentUrl = undefined;
-      this.task.attachmentName = undefined;
-      this.attachmentPreviewUrl = null;
-      this.selectedFile = null;
-      this.successMessage = 'Anexo marcado para remoção ao salvar.';
-      setTimeout(() => this.successMessage = null, 3000);
-    }
-  }
 
   async onSubmit(): Promise<void> {
     this.errorMessage = null;
@@ -99,24 +86,16 @@ export class TaskForm implements OnInit {
           title: this.task.title,
           description: this.task.description,
           dueDate: this.task.dueDate || null,
+          priority: this.task.priority,
           categoryId: this.task.categoryId
         };
-        if (this.task.attachmentUrl === undefined && this.attachmentPreviewUrl !== null) {
-            updateData.attachmentUrl = null;
-            updateData.attachmentName = null;
-        } else if (this.selectedFile) {
-        } else if (!this.attachmentPreviewUrl && !this.selectedFile) {
-            updateData.attachmentUrl = null;
-            updateData.attachmentName = null;
-        }
 
-        await this.taskService.updateTask(this.taskId, updateData, this.selectedFile || undefined); 
+        await this.taskService.updateTask(this.taskId, updateData); 
         this.successMessage = 'Tarefa atualizada com sucesso!';
       } else {
-        await this.taskService.addTask(this.task, this.selectedFile || undefined); 
+        await this.taskService.addTask(this.task); 
         this.successMessage = 'Tarefa adicionada com sucesso!';
-        this.task = { title: '', completed: false, categoryId: '', userId: '' };
-        this.selectedFile = null;
+        this.task = { title: '', description: null, dueDate: null, priority: 'medium', completed: false, categoryId: '', userId: '' };
       }
       setTimeout(() => {
         this.router.navigate(['/tasks']);

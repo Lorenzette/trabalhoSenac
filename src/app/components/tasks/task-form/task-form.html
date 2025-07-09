@@ -27,17 +27,14 @@
       </select>
     </div>
 
-    <div class="form-group attachment-section">
-        <label>Anexo:</label>
-        <input type="file" (change)="onFileSelected($event)">
-
-        <div *ngIf="attachmentPreviewUrl" class="current-attachment">
-            <p>Anexo Atual: <a [href]="attachmentPreviewUrl" target="_blank">{{ task.attachmentName || 'Visualizar' }}</a></p>
-            <button type="button" class="remove-attachment-button" (click)="onRemoveAttachment()">Remover Anexo</button>
-        </div>
-        <p *ngIf="selectedFile" class="selected-file-name">Novo arquivo selecionado: {{ selectedFile.name }}</p>
+    <div class="form-group">
+      <label for="priority">Prioridade:</label>
+      <select id="priority" [(ngModel)]="task.priority" name="priority" required>
+        <option value="low">Baixa</option>
+        <option value="medium">Média</option>
+        <option value="high">Alta</option>
+      </select>
     </div>
-
 
     <div class="form-actions">
       <button type="submit" class="save-button">{{ isEditMode ? 'Salvar Alterações' : 'Adicionar Tarefa' }}</button>

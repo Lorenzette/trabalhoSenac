@@ -25,7 +25,7 @@
     }
 
     input[type="text"],
-    input[type="date"], /* Estilo para input de data */
+    input[type="date"], 
     select,
     textarea {
       width: 100%;
@@ -41,7 +41,7 @@
     }
 
     select {
-        appearance: none; /* Remove a seta padrão do select */
+        appearance: none; 
         background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007bff%22%20d%3D%22M287%2C146.204c0%2C0%2C-13.843%2C13.843%2C-13.843%2C13.843L146.2%2C287L5.45%2C146.204c0%2C0%2C-13.843%2C-13.843%2C-13.843%2C-13.843L146.2%2C5.45L287%2C146.204z%22%2F%3E%3C%2Fsvg%3E'); /* Seta customizada */
         background-repeat: no-repeat;
         background-position: right 10px top 50%;

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { Category, CategoryService } from '../../../services/categories/category'; // Ajuste o caminho conforme necessário
-import { Observable, firstValueFrom } from 'rxjs'; // Importe firstValueFrom
+import { Category, CategoryService } from '../../../services/categories/category'; 
+import { Observable, firstValueFrom } from 'rxjs'; 
 import { Router } from '@angular/router';
 
 @Component({
@@ -40,7 +40,7 @@ export class CategoryList implements OnInit {
 
     if (confirm('Tem certeza que deseja excluir esta categoria?')) {
       try {
-        await this.categoryService.deleteCategory(categoryId); // Esta função já retorna Promise, não Observable
+        await this.categoryService.deleteCategory(categoryId); 
         this.successMessage = 'Categoria excluída com sucesso!';
         setTimeout(() => this.successMessage = null, 3000);
       } catch (error: any) {

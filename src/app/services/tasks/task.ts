@@ -1,20 +1,26 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject, Injector, runInInjectionContext } from '@angular/core';
 import { AngularFirestore, AngularFirestoreCollection, DocumentReference } from '@angular/fire/compat/firestore';
-import { AngularFireStorage } from '@angular/fire/compat/storage';
-import { Observable, from, of, firstValueFrom } from 'rxjs'; 
-import { map, switchMap, finalize } from 'rxjs/operators';
-import { AuthService } from '../auths/auth';
+import { Observable, of, from, firstValueFrom } from 'rxjs';
+import { map, switchMap, take } from 'rxjs/operators';
+
+import { AuthService } from '../../services/auths/auth';
+
+export interface Category {
+  id?: string;
+  name: string;
+  description: string;
+  userId: string;
+}
 
 export interface Task {
   id?: string;
   title: string;
-  description?: string;
+  description?: string | null;
   dueDate?: Date | null;
+  priority: 'low' | 'medium' | 'high';
   completed: boolean;
   categoryId: string;
   userId: string;
-  attachmentUrl?: string | null;   
-  attachmentName?: string | null;
 }
 
 @Injectable({
@@ -22,28 +28,47 @@ export interface Task {
 })
 export class TaskService {
   private tasksCollection: AngularFirestoreCollection<Task>;
+  private _injector = inject(Injector);
 
   constructor(
     private afs: AngularFirestore,
-    private afStorage: AngularFireStorage,
     private authService: AuthService
-  ) {
+    ) {
+    console.log('TaskService: Construtor chamado. AngularFirestore (afs):', this.afs);
     this.tasksCollection = afs.collection<Task>('tasks');
+    console.log('TaskService: Coleção de Tarefas (tasksCollection):', this.tasksCollection);
   }
 
   getTasks(): Observable<Task[]> {
+    console.log('TaskService: getTasks() chamado para buscar tarefas.');
+
     return this.authService.user.pipe(
+      take(1),
       switchMap(user => {
         if (user) {
-          return this.afs.collection<Task>('tasks', ref => ref.where('userId', '==', user.uid))
-                     .snapshotChanges().pipe(
-                        map(actions => actions.map(a => {
-                          const data = a.payload.doc.data() as Task;
-                          const id = a.payload.doc.id;
-                          return { id, ...data };
-                        }))
-                     );
+          const userIdToQuery = user.uid;
+          console.log('TaskService: Usuário logado encontrado. UID:', userIdToQuery);
+          console.log('TaskService: Executando query Firestore: tasks onde userId ==', userIdToQuery);
+
+          return runInInjectionContext(this._injector, () => {
+            return this.afs.collection<Task>('tasks', ref => ref.where('userId', '==', userIdToQuery))
+                            .snapshotChanges().pipe(
+                                map(actions => {
+                                    console.log('TaskService: *** SNAPSHOT DE TAREFAS RECEBIDO ***. Número de documentos (actions):', actions.length);
+                                    if (actions.length === 0) {
+                                        console.warn('TaskService: NENHUM DOCUMENTO DE TAREFA RETORNADO PELA QUERY PARA O UID:', userIdToQuery);
+                                    }
+                                    return actions.map(a => {
+                                        const data = a.payload.doc.data() as Task;
+                                        const id = a.payload.doc.id;
+                                        console.log('TaskService: Processando documento de tarefa:', { id, ...data });
+                                        return { id, ...data };
+                                    });
+                                })
+                            );
+          });
         } else {
+          console.log('TaskService: Nenhum usuário logado, retornando array de tarefas vazio.');
           return of([]);
         }
       })
@@ -51,83 +76,43 @@ export class TaskService {
   }
 
   getTask(id: string): Observable<Task | undefined> {
-    return this.tasksCollection.doc<Task>(id).valueChanges().pipe(
-      map(task => {
-        if (task) {
-          return { id, ...task };
-        }
-        return undefined;
-      })
-    );
+    return runInInjectionContext(this._injector, () => {
+      return this.tasksCollection.doc<Task>(id).valueChanges().pipe(
+        map(task => {
+          if (task) {
+            return { id, ...task };
+          }
+          return undefined;
+        })
+      );
+    });
   }
 
-  async addTask(task: Task, file?: File): Promise<DocumentReference<Task>> {
+  async addTask(task: Task): Promise<DocumentReference<Task>> {
     const userId = await this.authService.getCurrentUserId();
     if (!userId) {
-      return Promise.reject(new Error('Nenhum usuário logado para adicionar tarefa.'));
+      throw new Error('Nenhum usuário logado para adicionar tarefa.');
     }
 
     const taskToAdd = { ...task, userId, completed: false, dueDate: task.dueDate || null };
 
-    if (file) {
-      const filePath = `task_attachments/${userId}/${Date.now()}_${file.name}`;
-      const fileRef = this.afStorage.ref(filePath);
-      const uploadTask = this.afStorage.upload(filePath, file);
-
-      await firstValueFrom(uploadTask.snapshotChanges().pipe(
-        finalize(() => console.log('Upload de arquivo concluído')),
-      ));
-
-      const downloadURL = await firstValueFrom(fileRef.getDownloadURL()); 
-      taskToAdd.attachmentUrl = downloadURL;
-      taskToAdd.attachmentName = file.name;
-    }
-
-    return this.tasksCollection.add(taskToAdd);
+    console.log('TaskService: Adicionando tarefa ao Firestore:', taskToAdd);
+    return runInInjectionContext(this._injector, () => {
+      return this.tasksCollection.add(taskToAdd);
+    });
   }
 
-  async updateTask(id: string, task: Partial<Task>, file?: File): Promise<void> {
-    if (file) {
-      const existingTask = await firstValueFrom(this.getTask(id)); 
-      if (existingTask?.attachmentUrl) {
-        await this.deleteFile(existingTask.attachmentUrl);
-      }
-
-      const userId = await this.authService.getCurrentUserId();
-      if (!userId) {
-        return Promise.reject(new Error('Nenhum usuário logado para atualizar tarefa.'));
-      }
-      const filePath = `task_attachments/${userId}/${Date.now()}_${file.name}`;
-      const fileRef = this.afStorage.ref(filePath);
-      const uploadTask = this.afStorage.upload(filePath, file);
-
-      await firstValueFrom(uploadTask.snapshotChanges().pipe(
-        finalize(() => console.log('Upload de arquivo concluído')),
-      ));
-
-      const downloadURL = await firstValueFrom(fileRef.getDownloadURL()); 
-      task.attachmentUrl = downloadURL;
-      task.attachmentName = file.name;
-    } else if (task.attachmentUrl === null) {
-      const existingTask = await firstValueFrom(this.getTask(id)); 
-      if (existingTask?.attachmentUrl) {
-        await this.deleteFile(existingTask.attachmentUrl);
-      }
-      task.attachmentName = null;
-    }
-
-    return this.tasksCollection.doc<Task>(id).update(task);
+  async updateTask(id: string, task: Partial<Task>): Promise<void> {
+    console.log('TaskService: Atualizando tarefa no Firestore:', id, task);
+    return runInInjectionContext(this._injector, () => {
+      return this.tasksCollection.doc<Task>(id).update(task);
+    });
   }
 
   async deleteTask(id: string): Promise<void> {
-    const taskToDelete = await firstValueFrom(this.getTask(id));
-    if (taskToDelete && taskToDelete.attachmentUrl) {
-      await this.deleteFile(taskToDelete.attachmentUrl);
-    }
-    return this.tasksCollection.doc<Task>(id).delete();
-  }
-
-  deleteFile(fileUrl: string): Promise<void> {
-    return firstValueFrom(this.afStorage.refFromURL(fileUrl).delete());
+    console.log('TaskService: Excluindo tarefa do Firestore:', id);
+    return runInInjectionContext(this._injector, () => {
+      return this.tasksCollection.doc<Task>(id).delete();
+    });
   }
 }

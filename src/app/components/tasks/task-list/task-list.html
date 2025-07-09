@@ -4,7 +4,10 @@
   <p *ngIf="successMessage" class="success-message">{{ successMessage }}</p>
   <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
 
-  <button class="add-button" (click)="onAddTask()">Adicionar Nova Tarefa</button>
+  <div class="header-actions">
+    <button class="add-button" (click)="onAddTask()">Adicionar Nova Tarefa</button>
+    <button class="back-button" routerLink="/dashboard">Voltar ao Dashboard</button>
+  </div>
 
   <div *ngIf="(tasksWithCategory$ | async) as tasks">
     <p *ngIf="tasks.length === 0" class="no-tasks-message">
@@ -18,9 +21,6 @@
           <p *ngIf="task.description">{{ task.description }}</p>
           <p class="category-name">Categoria: {{ task.categoryName }}</p>
           <p class="due-date" *ngIf="task.dueDate">Vence em: {{ formatDate(task.dueDate) }}</p>
-          <a *ngIf="task.attachmentUrl" [href]="task.attachmentUrl" target="_blank" class="attachment-link">
-            Anexo: {{ task.attachmentName || 'Download' }}
-          </a>
         </div>
         <div class="task-actions">
           <input type="checkbox" [checked]="task.completed" (change)="onToggleCompleted(task)">
