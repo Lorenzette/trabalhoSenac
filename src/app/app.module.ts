@@ -8,8 +8,6 @@ import { FormsModule } from '@angular/forms';
 import { AngularFireModule } from '@angular/fire/compat';
 import { AngularFireAuthModule } from '@angular/fire/compat/auth';
 import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
-// Removida importação de AngularFireStorageModule
-
 import { environment } from '../environments/environment';
 
 // Componentes Auth
@@ -42,7 +40,6 @@ import { TaskForm } from './components/tasks/task-form/task-form';
     AngularFireModule.initializeApp(environment.firebase),
     AngularFireAuthModule,
     AngularFirestoreModule,
-    // Removida importação de AngularFireStorageModule
   ],
   providers: [],
   bootstrap: [App] 

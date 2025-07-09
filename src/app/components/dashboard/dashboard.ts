@@ -1,5 +1,3 @@
-// src/app/components/dashboard/dashboard.ts
-
 import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../../services/auths/auth';
 import { Router } from '@angular/router';
